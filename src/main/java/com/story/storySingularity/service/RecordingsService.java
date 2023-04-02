@@ -1,7 +1,11 @@
 package com.story.storySingularity.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.story.storySingularity.model.dto.RecordingsReturnDto;
 import com.story.storySingularity.model.po.Recordings;
+
+import java.io.File;
+import java.util.ArrayList;
 
 /**
  * <p>
@@ -13,4 +17,11 @@ import com.story.storySingularity.model.po.Recordings;
  */
 public interface RecordingsService extends IService<Recordings> {
 
+    RecordingsReturnDto getRecordingsByUserId(Integer userId);
+
+    public File downloadFileFromMinIO(String bucket, String objectName);
+
+    Recordings saveRecordings(RecordingsReturnDto recordingsReturnDto);
+
+//    ArrayList<RecordingsReturnDto> listPage(Integer pageNo, Integer pageNum);
 }
