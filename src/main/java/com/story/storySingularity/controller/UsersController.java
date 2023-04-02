@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.story.storySingularity.model.VerifyCode;
 import com.story.storySingularity.model.dto.UsersLoginDto;
 import com.story.storySingularity.model.dto.UsersRegisterDto;
+import com.story.storySingularity.model.dto.UsersSmsLoginDto;
 import com.story.storySingularity.model.po.Users;
 import com.story.storySingularity.service.UsersService;
 import com.story.storySingularity.service.VerifyCodeGen;
@@ -32,6 +33,20 @@ public class UsersController {
 
     @Autowired
     private UsersService usersService;
+
+    //手机号登录
+    @PostMapping("/sms_login")
+    public String smsLogin(@RequestBody UsersSmsLoginDto userSmsLoginDto) {
+        if (userSmsLoginDto == null) {
+            return "操作失败";
+        }
+        Users user = new Users();
+        if (usersService.selectUserByPhoneNumber(user) == null) {
+            user.setPhone(userSmsLoginDto.getPhone());
+            user.setUsername("用户" + userSmsLoginDto.getPhone().substring(userSmsLoginDto.getPhone().length() - 4));
+        }
+        return "登录成功";
+    }
 
     //用户注册
     @PostMapping("/register")//用@RequestMapping，则什么请求类型都可以
@@ -73,26 +88,28 @@ public class UsersController {
 
     //保存用户资料
     @PostMapping("/save")
-    public RestResponse<Users> saveUser(@RequestBody Users user){
+    public RestResponse<Users> saveUser(@RequestBody Users user) {
         if (user == null) {
             return RestResponse.validfail("保存失败");
         }
-        usersService.update(user,null);
+        usersService.update(user, null);
         return RestResponse.success(user);
     }
 
     @GetMapping("/getUserById/{id}")
-    public RestResponse<Users> getById(@PathVariable("id") Integer id){
+    public RestResponse<Users> getById(@PathVariable("id") Integer id) {
         Users user = usersService.getById(id);
         return RestResponse.success(user);
     }
+
     @GetMapping("/getUserByName/{name}")
-    public RestResponse<Users> getByName(@PathVariable("name") String name){
+    public RestResponse<Users> getByName(@PathVariable("name") String name) {
         LambdaQueryWrapper<Users> usersLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        usersLambdaQueryWrapper.eq(Users::getName,name);
+        usersLambdaQueryWrapper.eq(Users::getName, name);
         Users user = usersService.getOne(usersLambdaQueryWrapper);
         return RestResponse.success(user);
     }
+
     @ApiOperation(value = "验证码")
     @GetMapping("/verifyCode")
     public void verifyCode(HttpServletRequest request, HttpServletResponse response) {
