@@ -36,16 +36,16 @@ public class UsersController {
 
     //手机号登录
     @PostMapping("/sms_login")
-    public String smsLogin(@RequestBody UsersSmsLoginDto userSmsLoginDto) {
-        if (userSmsLoginDto == null) {
-            return "操作失败";
+    public RestResponse<Users> smsLogin(@RequestBody UsersLoginDto userLoginDto) {
+        if (userLoginDto == null) {
+            return RestResponse.validfail("操作失败");
         }
         Users user = new Users();
         if (usersService.selectUserByPhoneNumber(user) == null) {
-            user.setPhone(userSmsLoginDto.getPhone());
-            user.setUsername("用户" + userSmsLoginDto.getPhone().substring(userSmsLoginDto.getPhone().length() - 4));
+            user.setPhone(userLoginDto.getPhone());
+            user.setUsername("用户" + userLoginDto.getPhone().substring(userLoginDto.getPhone().length() - 4));
         }
-        return "登录成功";
+        return RestResponse.success(user);
     }
 
     //用户注册
@@ -70,10 +70,12 @@ public class UsersController {
         usersService.saveUser(user);
         return RestResponse.success(user);
     }
+
     @PostMapping("/code")
-    public RestResponse<String> code(@RequestParam("phone") String phone){
+    public RestResponse<String> code(@RequestParam("phone") String phone) {
         return RestResponse.success("5w1t");
     }
+
     //用户登录
     @PostMapping("/login")
     public RestResponse<Users> login(@RequestBody UsersLoginDto userLoginDto) {
