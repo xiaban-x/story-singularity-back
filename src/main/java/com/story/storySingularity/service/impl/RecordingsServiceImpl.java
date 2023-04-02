@@ -1,12 +1,11 @@
 package com.story.storySingularity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.houbb.opencc4j.util.ZhConverterUtil;
 import com.story.storySingularity.mapper.RecordingsMapper;
 import com.story.storySingularity.model.dto.RecordingsReturnDto;
 import com.story.storySingularity.model.po.Recordings;
-import com.story.storySingularity.model.po.Users;
 import com.story.storySingularity.service.RecordingsService;
 import com.story.storySingularity.service.UsersService;
 import com.story.storySingularity.unfbx.chatgpt.OpenAiClient;
@@ -26,11 +25,10 @@ import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 /**
  * <p>
@@ -54,20 +52,25 @@ public class RecordingsServiceImpl extends ServiceImpl<RecordingsMapper, Recordi
 
     private String filePath = "D:\\audio\\";
 
-    private String mimeType = "m4a";
+    private String mimeType = "audio/x-m4a";
 
     private String bucket = "audio";
     @Override
-    public RecordingsReturnDto getRecordingsByUserId(Integer userId) {
-        RecordingsReturnDto recordingsReturnDto = new RecordingsReturnDto();
+    public List<RecordingsReturnDto> getRecordingsByUserId(Integer userId) {
+        ArrayList<RecordingsReturnDto> recordingsReturnDtos = new ArrayList<>();
         LambdaQueryWrapper<Recordings> recordingsLambdaQueryWrapper = new LambdaQueryWrapper<>();
         recordingsLambdaQueryWrapper.eq(Recordings::getUserId,userId);
-        Recordings recordings = recordingsMapper.selectOne(recordingsLambdaQueryWrapper);
-        recordingsReturnDto.setUserId(userId);
-        recordingsReturnDto.setText(recordings.getText());
-        File file = downloadFileFromMinIO("audio", recordings.getUrl());
-        recordingsReturnDto.setRecordingFile(file);
-        return recordingsReturnDto;
+        List<Recordings> recordings = recordingsMapper.selectList(recordingsLambdaQueryWrapper);
+        for(Recordings r : recordings){
+            RecordingsReturnDto recordingsReturnDto = new RecordingsReturnDto();
+            recordingsReturnDto.setUserId(userId);
+            recordingsReturnDto.setText(r.getText());
+            File file = downloadFileFromMinIO("audio", r.getUrl());
+            recordingsReturnDto.setRecordingFile(file);
+            recordingsReturnDtos.add(recordingsReturnDto);
+        }
+
+        return recordingsReturnDtos;
     }
     @Override
     public Recordings saveRecordings(RecordingsReturnDto recordingsReturnDto) {
@@ -82,10 +85,12 @@ public class RecordingsServiceImpl extends ServiceImpl<RecordingsMapper, Recordi
         Date d = new Date();
         SimpleDateFormat sbf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String time = sbf.format(d);
-        String fileName = recordingsReturnDto.getUserId() + time;
+        time = time.replace(" ","T");
+//        String fileName = recordingsReturnDto.getUserId()+ "-"+ time + "." +mimeType;
+        String fileName = recordingFile.getName();
         //将录音传到本地
         boolean b = writeFile(inputStream, fileName);
-        String localFilePath = filePath + File.separator + fileName;
+        String localFilePath = filePath + fileName;
         if (b){
             //让本地录音上传到minio
             boolean b1 = addMediaFilesToMinIO(localFilePath, mimeType, bucket, fileName);
@@ -98,11 +103,28 @@ public class RecordingsServiceImpl extends ServiceImpl<RecordingsMapper, Recordi
                         openAiClient.speechToTextTranscriptions(new File(localFilePath)
                                 , Whisper.Model.WHISPER_1);
                 String text = whisperResponse.getText();
+                //繁体转换简体
+                text = ZhConverterUtil.convertToSimple(text);
                 recordings.setText(text);
+                recordingsMapper.insert(recordings);
                 return recordings;
             }
         }
         return null;
+    }
+
+    @Override
+    public RecordingsReturnDto getRecordingsById(Integer id) {
+        LambdaQueryWrapper<Recordings> recordingsLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        recordingsLambdaQueryWrapper.eq(Recordings::getId,id);
+        Recordings recording = recordingsMapper.selectOne(recordingsLambdaQueryWrapper);
+        RecordingsReturnDto recordingsReturnDto = new RecordingsReturnDto();
+        recordingsReturnDto.setUserId(id);
+        recordingsReturnDto.setText(recording.getText());
+        File file = downloadFileFromMinIO("audio", recording.getUrl());
+        recordingsReturnDto.setRecordingFile(file);
+
+        return recordingsReturnDto;
     }
 
     public boolean writeFile(InputStream inputStream, String fileName){

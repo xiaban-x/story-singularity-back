@@ -6,6 +6,7 @@ import com.story.storySingularity.model.po.Recordings;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * <p>
@@ -17,11 +18,13 @@ import java.util.ArrayList;
  */
 public interface RecordingsService extends IService<Recordings> {
 
-    RecordingsReturnDto getRecordingsByUserId(Integer userId);
+    List<RecordingsReturnDto> getRecordingsByUserId(Integer userId);
 
     public File downloadFileFromMinIO(String bucket, String objectName);
 
     Recordings saveRecordings(RecordingsReturnDto recordingsReturnDto);
+
+    RecordingsReturnDto getRecordingsById(Integer id);
 
 //    ArrayList<RecordingsReturnDto> listPage(Integer pageNo, Integer pageNum);
 }
