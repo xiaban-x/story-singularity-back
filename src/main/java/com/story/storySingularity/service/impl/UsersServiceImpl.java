@@ -36,4 +36,11 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
         }
         return usersMapper.selectOneUser(u);
     }
+    @Override
+    public Users selectUserByPhoneNumber(Users u) {
+        if (u.getPhone() == null) {
+            return null;
+        }
+        return usersMapper.selectOneUserByPhone(u);
+    }
 }
