@@ -1,5 +1,6 @@
 package com.story.storySingularity.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.story.storySingularity.mapper.UsersMapper;
 import com.story.storySingularity.model.po.Users;
@@ -31,9 +32,6 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
 
     @Override
     public Users selectUser(Users u) {
-        if (u.getUsername() == null || u.getPassword() == null) {
-            return null;
-        }
         return usersMapper.selectOneUser(u);
     }
     @Override
@@ -42,5 +40,12 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
             return null;
         }
         return usersMapper.selectOneUserByPhone(u);
+    }
+
+    @Override
+    public Users login(String phone) {
+        LambdaQueryWrapper<Users> usersLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        usersLambdaQueryWrapper.eq(Users::getPhone,phone);
+        return usersMapper.selectOne(usersLambdaQueryWrapper);
     }
 }

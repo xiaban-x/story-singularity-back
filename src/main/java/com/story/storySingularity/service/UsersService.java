@@ -17,4 +17,6 @@ public interface UsersService extends IService<Users> {
     void saveUser(Users u);
     Users selectUser(Users u);
     Users selectUserByPhoneNumber(Users u);
+
+    Users login(String phone);
 }

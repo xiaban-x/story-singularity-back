@@ -70,19 +70,17 @@ public class UsersController {
         usersService.saveUser(user);
         return RestResponse.success(user);
     }
-
+    @PostMapping("/code")
+    public RestResponse<String> code(@RequestParam("phone") String phone){
+        return RestResponse.success("5w1t");
+    }
     //用户登录
     @PostMapping("/login")
-    public RestResponse<Users> loginIn(@RequestBody UsersLoginDto userLoginDto) {
+    public RestResponse<Users> login(@RequestBody UsersLoginDto userLoginDto) {
         if (userLoginDto == null) {
             return RestResponse.validfail("登录失败");
         }
-        Users user = new Users();
-        user.setUsername(userLoginDto.getUsername());
-        user.setPassword(userLoginDto.getPassword());
-        if (usersService.selectUser(user) == null) {
-            return RestResponse.validfail("登录失败");
-        }
+        Users user = usersService.login(userLoginDto.getPhone());
         return RestResponse.success(user);
     }
 
