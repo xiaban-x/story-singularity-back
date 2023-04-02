@@ -58,17 +58,17 @@ public class UsersController {
 
     //用户登录
     @PostMapping("/login")
-    public String loginIn(@RequestBody UsersLoginDto userLoginDto) {
+    public RestResponse<Users> loginIn(@RequestBody UsersLoginDto userLoginDto) {
         if (userLoginDto == null) {
-            return "操作失败";
+            return RestResponse.validfail("登录失败");
         }
         Users user = new Users();
         user.setUsername(userLoginDto.getUsername());
         user.setPassword(userLoginDto.getPassword());
         if (usersService.selectUser(user) == null) {
-            return "无此账号";
+            return RestResponse.validfail("登录失败");
         }
-        return "登录成功";
+        return RestResponse.success(user);
     }
 
     //保存用户资料
