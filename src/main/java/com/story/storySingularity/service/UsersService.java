@@ -1,6 +1,7 @@
 package com.story.storySingularity.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.story.storySingularity.model.dto.UsersLoginReturnDto;
 import com.story.storySingularity.model.po.Users;
 
 import java.util.List;
@@ -18,5 +19,5 @@ public interface UsersService extends IService<Users> {
     Users selectUser(Users u);
     Users selectUserByPhoneNumber(Users u);
 
-    Users login(String phone);
+    UsersLoginReturnDto login(String phone);
 }

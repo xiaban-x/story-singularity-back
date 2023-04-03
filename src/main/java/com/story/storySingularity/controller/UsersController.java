@@ -3,6 +3,7 @@ package com.story.storySingularity.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.story.storySingularity.model.VerifyCode;
 import com.story.storySingularity.model.dto.UsersLoginDto;
+import com.story.storySingularity.model.dto.UsersLoginReturnDto;
 import com.story.storySingularity.model.dto.UsersRegisterDto;
 import com.story.storySingularity.model.dto.UsersSmsLoginDto;
 import com.story.storySingularity.model.po.Users;
@@ -34,54 +35,58 @@ public class UsersController {
     @Autowired
     private UsersService usersService;
 
-    //手机号注册/登录
-    @PostMapping("/login")
-    public RestResponse<Users> smsLogin(@RequestBody UsersSmsLoginDto userSmsLoginDto) {
+    //手机号登录
+    @PostMapping("/sms_login")
+    public String smsLogin(@RequestBody UsersSmsLoginDto userSmsLoginDto) {
         if (userSmsLoginDto == null) {
-            return RestResponse.validfail("操作失败");
+            return "操作失败";
         }
-        Users user = usersService.login(userSmsLoginDto.getPhone());
-        if (user == null) {
-            return RestResponse.validfail("操作失败");
+        Users user = new Users();
+        if (usersService.selectUserByPhoneNumber(user) == null) {
+            user.setPhone(userSmsLoginDto.getPhone());
+            user.setUsername("用户" + userSmsLoginDto.getPhone().substring(userSmsLoginDto.getPhone().length() - 4));
         }
-        return RestResponse.success(user);
+        return "登录成功";
     }
 
     //用户注册
-//    @PostMapping("/register")//用@RequestMapping，则什么请求类型都可以
-//    //restful接口风格，可以用不同的请求方式实现不同的效果
-//    //使用@PathVariable注解，让方法参数的值对应绑到一个URL模板变量上
-//    public RestResponse<Users> registerUser(@RequestBody UsersRegisterDto userRegisterDto) {
-//
-//        if (userRegisterDto == null) {
-//            return RestResponse.validfail("注册失败");
-//        }
-//        if (userRegisterDto.getUsername() == null || userRegisterDto.getPassword() == null || userRegisterDto.getPhone() == null || !userRegisterDto.getIsPassCode()) {
-//            return RestResponse.validfail("注册失败");
-//        }
-//        Users user = new Users();
-//        user.setUsername(userRegisterDto.getUsername());
-//        user.setPassword(userRegisterDto.getPassword());
-//        user.setPhone(userRegisterDto.getPhone());
-//        if (!(usersService.selectUser(user) == null)) {
-//            return RestResponse.validfail("此账号与密码已重复");
-//        }
-//        usersService.saveUser(user);
-//        return RestResponse.success(user);
-//    }
+    @PostMapping("/register")//用@RequestMapping，则什么请求类型都可以
+    //restful接口风格，可以用不同的请求方式实现不同的效果
+    //使用@PathVariable注解，让方法参数的值对应绑到一个URL模板变量上
+    public RestResponse<Users> registerUser(@RequestBody UsersRegisterDto userRegisterDto) {
+
+        if (userRegisterDto == null) {
+            return RestResponse.validfail("注册失败");
+        }
+        if (userRegisterDto.getUsername() == null || userRegisterDto.getPassword() == null || userRegisterDto.getPhone() == null || !userRegisterDto.getIsPassCode()) {
+            return RestResponse.validfail("注册失败");
+        }
+        Users user = new Users();
+        user.setUsername(userRegisterDto.getUsername());
+        user.setPassword(userRegisterDto.getPassword());
+        user.setPhone(userRegisterDto.getPhone());
+        if (!(usersService.selectUser(user) == null)) {
+            return RestResponse.validfail("此账号与密码已重复");
+        }
+        usersService.saveUser(user);
+        return RestResponse.success(user);
+    }
     @PostMapping("/code")
     public RestResponse<String> code(@RequestParam("phone") String phone){
         return RestResponse.success("5w1t");
     }
     //用户登录
-//    @PostMapping("/login")
-//    public RestResponse<Users> login(@RequestBody UsersLoginDto userLoginDto) {
-//        if (userLoginDto == null) {
-//            return RestResponse.validfail("登录失败");
-//        }
-//        Users user = usersService.login(userLoginDto.getPhone());
-//        return RestResponse.success(user);
-//    }
+    @PostMapping("/login")
+    public RestResponse<UsersLoginReturnDto> login(@RequestBody UsersLoginDto userLoginDto) {
+        if (userLoginDto == null) {
+            return RestResponse.validfail("操作失败");
+        }
+        UsersLoginReturnDto user = usersService.login(userLoginDto.getPhone());
+        if (user == null){
+            return RestResponse.validfail("操作失败");
+        }
+        return RestResponse.success(user);
+    }
 
     //保存用户资料
     @PostMapping("/save")
