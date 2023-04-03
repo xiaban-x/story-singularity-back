@@ -230,9 +230,9 @@ public class RecordingsServiceImpl extends ServiceImpl<RecordingsMapper, Recordi
         httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
         OpenAiClient openAiClient = OpenAiClient.builder()
                 .apiKey("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")
-                .connectTimeout(5000)
-                .writeTimeout(5000)
-                .readTimeout(5000)
+                .connectTimeout(500000)
+                .writeTimeout(500000)
+                .readTimeout(500000)
                 .interceptor(Arrays.asList(httpLoggingInterceptor))
                 .proxy(proxy)
                 .apiHost("https://api.openai.com/")

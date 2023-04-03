@@ -3,6 +3,7 @@ package com.story.storySingularity.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.story.storySingularity.model.dto.PostsListDto;
+import com.story.storySingularity.model.dto.PostsReturnDto;
 import com.story.storySingularity.model.po.Posts;
 
 import java.util.ArrayList;
@@ -17,5 +18,7 @@ import java.util.ArrayList;
  */
 public interface PostsService extends IService<Posts> {
 
-    Page<Posts> listByPostsListDto(PostsListDto postsListDto);
+    Page<PostsReturnDto> listByPostsListDto(PostsListDto postsListDto);
+
+    PostsReturnDto getPostsReturnDtoById(Integer postId);
 }

@@ -6,10 +6,12 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.story.storySingularity.mapper.PostsMapper;
 import com.story.storySingularity.mapper.UsersMapper;
 import com.story.storySingularity.model.dto.PostsListDto;
+import com.story.storySingularity.model.dto.PostsReturnDto;
 import com.story.storySingularity.model.po.Posts;
 import com.story.storySingularity.model.po.Users;
 import com.story.storySingularity.service.PostsService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,7 +36,7 @@ public class PostsServiceImpl extends ServiceImpl<PostsMapper, Posts> implements
     private UsersMapper usersMapper;
 
     @Override
-    public Page<Posts> listByPostsListDto(PostsListDto postsListDto) {
+    public Page<PostsReturnDto> listByPostsListDto(PostsListDto postsListDto) {
         ArrayList<Posts> posts = new ArrayList<>();
         //要搜索的关键字
         String key = postsListDto.getKey();
@@ -84,9 +86,10 @@ public class PostsServiceImpl extends ServiceImpl<PostsMapper, Posts> implements
         Integer pageNum = postsListDto.getPageNum();
         int size = postsSorted.size();
         //设置最终的返回的分页
-        Page<Posts> postsPage = new Page<>();
+        Page<PostsReturnDto> postsPage = new Page<>();
         //存储分页后的集合
         ArrayList<Posts> postsByPage = new ArrayList<>();
+        ArrayList<PostsReturnDto> postsReturnDtoByPage = new ArrayList<>();
         //1 5   0 1 2 3 4
         //2 5   5 6 7 8 9
         if (size <= 5){
@@ -107,11 +110,30 @@ public class PostsServiceImpl extends ServiceImpl<PostsMapper, Posts> implements
                 }
             }
         }
-
-        postsPage.setRecords(postsByPage);
+        for (Posts p : postsByPage){
+            PostsReturnDto postsReturnDto = new PostsReturnDto();
+            BeanUtils.copyProperties(p,postsReturnDto);
+            Users user = usersMapper.selectById(p.getUserId());
+            postsReturnDto.setUser(user);
+            postsReturnDtoByPage.add(postsReturnDto);
+        }
+        postsPage.setRecords(postsReturnDtoByPage);
         postsPage.setCurrent(pageNo);
         postsPage.setSize(pageNum);
         postsPage.setTotal(size);
         return postsPage;
+    }
+
+    @Override
+    public PostsReturnDto getPostsReturnDtoById(Integer postId) {
+        Posts posts = postsMapper.selectById(postId);
+        if (posts == null){
+            return null;
+        }
+        Users user = usersMapper.selectById(posts.getUserId());
+        PostsReturnDto postsReturnDto = new PostsReturnDto();
+        BeanUtils.copyProperties(posts,postsReturnDto);
+        postsReturnDto.setUser(user);
+        return postsReturnDto;
     }
 }

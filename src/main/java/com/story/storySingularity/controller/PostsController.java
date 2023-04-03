@@ -2,6 +2,7 @@ package com.story.storySingularity.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.story.storySingularity.model.dto.PostsListDto;
+import com.story.storySingularity.model.dto.PostsReturnDto;
 import com.story.storySingularity.model.dto.RecordingsReturnDto;
 import com.story.storySingularity.model.po.Posts;
 import com.story.storySingularity.service.PostsService;
@@ -55,14 +56,14 @@ public class PostsController {
         return RestResponse.validfail("更新失败");
     }
     @PostMapping("/list")
-    public RestResponse<Page<Posts>> list(@RequestBody PostsListDto postsListDto){
-        Page<Posts> postsPage = postsService.listByPostsListDto(postsListDto);
+    public RestResponse<Page<PostsReturnDto>> list(@RequestBody PostsListDto postsListDto){
+        Page<PostsReturnDto> postsPage = postsService.listByPostsListDto(postsListDto);
         return RestResponse.success(postsPage);
     }
 
     @GetMapping("/getPost/{postId}")
-    public RestResponse<Posts> getPostById(@PathVariable("postId") Integer postId){
-        Posts post = postsService.getById(postId);
+    public RestResponse<PostsReturnDto> getPostById(@PathVariable("postId") Integer postId){
+        PostsReturnDto post = postsService.getPostsReturnDtoById(postId);
         if (post != null){
             return RestResponse.success(post);
         }
