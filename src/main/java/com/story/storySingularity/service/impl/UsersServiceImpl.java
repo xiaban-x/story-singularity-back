@@ -46,6 +46,19 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
     public Users login(String phone) {
         LambdaQueryWrapper<Users> usersLambdaQueryWrapper = new LambdaQueryWrapper<>();
         usersLambdaQueryWrapper.eq(Users::getPhone,phone);
-        return usersMapper.selectOne(usersLambdaQueryWrapper);
+        Users user = usersMapper.selectOne(usersLambdaQueryWrapper);
+        if (user == null){
+            //用户未注册，需要注册
+            Users newUser = new Users();
+            newUser.setPhone(phone);
+            newUser.setName("用户" + phone.substring(phone.length() - 4));
+            int insert = usersMapper.insert(newUser);
+            if (insert > 0){
+                return newUser;
+            }else{
+                return null;
+            }
+        }
+        return user;
     }
 }
